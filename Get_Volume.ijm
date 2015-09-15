@@ -1,5 +1,5 @@
 // Tool to measure calcification in CT images
-// Manuel Schütze - September 2015
+// Manuel Schutze - September 2015
 
 // How to use:
 // 1. Install in ImageJ using Plugins > Macros > Install
@@ -15,11 +15,14 @@
 var huThreshold = 130;
 
 macro "Get Volume Tool - C00cT1b10GT8b10V" {
+	print("\\Clear");
+	print("Get Volume Tool");
+	//get pixel width and height and slice thickness
+	getPixelSize(unit, pixelWidth, pixelHeight);
+	sliceThickness = getInfo('0018,0050'); //DICOM_TAG for Slice Thickness
+	//get info for current selection
 	getStatistics(area, mean, min, max)
 	if(max>huThreshold) {
-		//get pixel width and height and slice thickness
-		getPixelSize(unit, pixelWidth, pixelHeight);
-		sliceThickness = getInfo('0018,0050'); //DICOM_TAG for Slice Thickness
 		//get pixels higher than huThreshold
 		getHistogram(values,counts,max-huThreshold,huThreshold,max);
 		//count pixels
@@ -38,11 +41,15 @@ macro "Get Volume Tool - C00cT1b10GT8b10V" {
 			volume+=getResult("Area",r)*sliceThickness;
 		}
 		//print cumulative volume on each run
-		print("\\Clear");
-		print("Get Volume Tool");
 		print("Total volume: "+volume+"mm3");
+		print("Pixels selected: "+pixels);
 	} else {
-		print("\\Clear");
+		//calculate volume based on results in table (cumulative)
+		volume=0;
+		for(r=0; r<nResults; r++) {
+			volume+=getResult("Area",r)*sliceThickness;
+		}
+		print("Total volume: "+volume+"mm3");
 		print("No pixels selected!");
 	} 
 }
